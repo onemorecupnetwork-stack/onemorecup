@@ -259,6 +259,8 @@ h2:hover em{transform:rotate(-4deg) scale(1.05)}
 .meter{height:26px;border-radius:10px;background:var(--blue-deep);border:3px solid var(--ink);overflow:hidden;margin:18px 0 10px;position:relative}
 .meter i{position:absolute;left:0;top:0;bottom:0;width:0;background:repeating-linear-gradient(-45deg,var(--orange) 0 12px,var(--orange-2) 12px 20px);transition:width 1.8s var(--ease);animation:stripes 1s linear infinite;background-size:28px 28px}
 @keyframes stripes{to{background-position:28px 0}}
+.meter i.indet{width:30%;border-inline:3px solid var(--ink);animation:stripes 1s linear infinite,slide 2.4s ease-in-out infinite alternate}
+@keyframes slide{from{left:0}to{left:70%}}
 .stages{display:flex;justify-content:space-between;font-family:"Silkscreen";font-size:12px;color:var(--ice)}
 .stages .on{color:var(--orange-2)}
 .curve p{color:var(--ice);font-weight:600;font-size:15px;margin:18px 0 20px}
@@ -372,18 +374,18 @@ footer .fbtn{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     payWith: "CC",
     launchpad: "Supanova",
     // Instrument ID token dari Supanova (contoh format: OMC-XXXXXXXXXXXXXXXX)
-    instrumentId: "OMC-PASTE_INSTRUMENT_ID",
+    instrumentId: "OMC-A4A554340F05DCC7DF416B8B",
     supply: 1000000000,
-    curvePct: 80,          // % supply di bonding curve
-    dexPct: 20,            // % supply untuk DEX reserve
+    curvePct: 80,          // % supply di bonding curve (800,000,000 OMC)
+    dexPct: 20,            // % supply untuk DEX reserve (200,000,000 OMC)
     graduation: "250K CC", // target graduation
-    stage: "Ignition",     // tahap saat ini di Supanova
-    curveProgress: 0,      // progress curve 0-100 (update manual)
-    launchDate: "TBA",     // contoh: "2026-11-20"
-    buyUrl: "https://launch.supanova.app",       // link halaman token $OMC di Supanova
-    dexscanUrl: "https://www.cantoncap.cc/dex",  // link DexScan $OMC
-    xUrl: "https://x.com",
-    telegramUrl: "https://t.me",
+    stage: "Bonding curve",// tahap saat ini di Supanova
+    curveProgress: null,   // null = tampil "LIVE"; atau isi angka 0-100 kalau mau tampilkan persen
+    launchDate: "2026-11-19",
+    buyUrl: "https://launch.supanova.app/coin/onemorecup-66979570ab",
+    dexscanUrl: "https://www.cantoncap.cc/dex/OMC-A4A554340F05DCC7DF416B8B",
+    xUrl: "https://x.com/onemorecupcc",
+    telegramUrl: "https://t.me/onemorecupcc",
   };
 </script>
 
@@ -530,16 +532,16 @@ footer .fbtn{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
         <ul class="log" id="log">
           <i class="fill" id="logfill"></i>
           <li class="done"><div class="t" data-cfg="launchDate"></div><div class="e">Created on <span data-cfg="launchpad"></span> <span>· 1B fixed supply</span></div></li>
-          <li class="done"><div class="t">NOW</div><div class="e">Bonding curve open <span>· <span data-cfg="stage"></span></span></div></li>
+          <li class="done"><div class="t">NOW</div><div class="e">Bonding curve open <span>· trading live</span></div></li>
           <li><div class="t">NEXT</div><div class="e">Graduation at <span data-cfg="graduation"></span></div></li>
           <li><div class="t">THEN</div><div class="e">DEX liquidity <span>· 20% reserve goes live</span></div></li>
         </ul>
       </div>
       <div class="card navy curve reveal" data-tilt="5" style="--d:.1s">
         <div class="rowtop"><span class="k">BONDING CURVE</span><span class="badge o" style="margin:0" data-cfg="stage"></span></div>
-        <div class="big"><span id="curvePct">0</span>%</div>
+        <div class="big" id="curveBig">LIVE</div>
         <div class="meter"><i id="meter"></i></div>
-        <div class="stages"><span class="on">IGNITION</span><span>CRUISE</span><span>GRAD</span></div>
+        <div class="stages"><span>LAUNCH</span><span class="on">CURVE</span><span>GRAD</span></div>
         <p>Live price and curve progress are always up to date on the Supanova token page.</p>
         <a class="btn orange" data-link="buyUrl" target="_blank" rel="noopener">Open on Supanova <span class="arrow">→</span></a>
       </div>
@@ -705,7 +707,16 @@ footer .fbtn{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
     const el = e.target; el.classList.add("in");
     $$("[data-count]", el).forEach(n => animateNum(n, CONFIG[n.dataset.count]));
     $$(".alloc", el).forEach(x => x.classList.add("in"));
-    if (el.querySelector("#meter")) { $("#meter").style.width = Math.max(4, CONFIG.curveProgress) + "%"; animateNum($("#curvePct"), CONFIG.curveProgress, 1800, 1); }
+    if (el.querySelector("#meter")) {
+      const p = CONFIG.curveProgress;
+      if (typeof p === "number") {
+        $("#meter").style.width = Math.max(4, p) + "%";
+        $("#curveBig").innerHTML = '<span id="curvePct">0</span>%';
+        animateNum($("#curvePct"), p, 1800, 1);
+      } else {
+        $("#meter").classList.add("indet");
+      }
+    }
     if (el.querySelector("#log")) { const d = $$("#log li.done"), last = d[d.length - 1]; $("#logfill").style.height = (last.offsetTop + 16) + "px"; }
     setTimeout(() => el.style.transitionDelay = "0s", 1200);
     io.unobserve(el);
